@@ -47,6 +47,8 @@ az mysql flexible-server firewall-rule create \
   --rule-name "AllowAzureServices" \
   --start-ip-address 0.0.0.0 \
   --end-ip-address 0.0.0.0
+  
+sleep 20
 
 echo "Clonando repositorio"
 git clone "$REPO_URL"
