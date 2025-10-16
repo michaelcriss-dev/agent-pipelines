@@ -58,16 +58,13 @@ git clone $REPO_URL
 # Importar base de datos si no existe
 
 export MYSQL_PWD="$ADMIN_PASSWORD"
-
-cd fullstack/SQL
-if ! mysql -h "${DB_HOST}" -u "${ADMIN_USER}" -e "USE ${MYSQL_DB};" 2>/dev/null; then
+if ! mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" --silent --skip-column-names -e "USE ${MYSQL_DB};" 2>/dev/null; then
     echo "Importing DB..."
-    mysql -h "${DB_HOST}" -u "${ADMIN_USER}" -e "CREATE DATABASE ${MYSQL_DB};"
-    mysql -h "${DB_HOST}" -u "${ADMIN_USER}" "${MYSQL_DB}" < ./stomology_dep.sql
+    mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" -e "CREATE DATABASE ${MYSQL_DB};"
+    mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" "${MYSQL_DB}" < stomology_dep.sql
 else
     echo "Database already exists..."
 fi
-
 unset MYSQL_PWD
 
 
