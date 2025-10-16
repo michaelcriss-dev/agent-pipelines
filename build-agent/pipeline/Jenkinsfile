@@ -26,21 +26,21 @@ pipeline {
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
                 ]) {
                     dir("${env.BUILD_TF}") {
-                        sh """
+                        sh '''
                         terraform init \
-                          -backend-config="bucket=${env.BUCKET}" \
-                          -backend-config="key=${env.FOLDER_BUCKET}/terraform.tfstate" \
-                          -backend-config="region=${env.AWS_REGION}
+                          -backend-config="bucket=$BUCKET" \
+                          -backend-config="key=$FOLDER_BUCKET/terraform.tfstate" \
+                          -backend-config="region=$AWS_REGION"
 
                         terraform apply -auto-approve \
-                          -var "ssh_public_key=${SSH_PUB}" \
-                          -var "ARM_CLIENT_ID=${ARM_CLIENT_ID}" \
-                          -var "ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}" \
-                          -var "ARM_TENANT_ID=${ARM_TENANT_ID}" \
-                          -var "ADMIN_PASSWORD=${MYSQL_PASSWORD}" \
-                          -var "DOCKER_USER=${DOCKER_HUB_USER}" \
-                          -var "DOCKER_PASS=${DOCKER_HUB_PASS}"
-                        """
+                          -var "ssh_public_key=$SSH_PUB" \
+                          -var "ARM_CLIENT_ID=$ARM_CLIENT_ID" \
+                          -var "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET" \
+                          -var "ARM_TENANT_ID=$ARM_TENANT_ID" \
+                          -var "ADMIN_PASSWORD=$MYSQL_PASSWORD" \
+                          -var "DOCKER_USER=$DOCKER_HUB_USER" \
+                          -var "DOCKER_PASS=$DOCKER_HUB_PASS"
+                        '''
                     }
                 }
             }
@@ -60,9 +60,9 @@ pipeline {
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
                 ]) {
                     dir("${env.BUILD_TF}") {
-                        sh """
-                        terraform destroy -auto-approve 
-                        """
+                        sh '''
+                        terraform destroy -auto-approve
+                        '''
                     }
                 }
             }
