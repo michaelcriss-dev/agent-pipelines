@@ -97,6 +97,7 @@ az webapp config appsettings set \
   --settings \
     DB_HOST="${DB_HOST}" \
     DB_USER="${ADMIN_USER}" \
-    DB_PASSWORD="${ADMIN_PASSWORD}"
+    DB_PASSWORD="${ADMIN_PASSWORD}" \
+    DB_DATABASE="${MYSQL_DB}"
 
 echo "Despliegue completado"
