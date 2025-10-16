@@ -41,7 +41,7 @@ pipeline {
                           -var "ADMIN_PASSWORD=$MYSQL_PASSWORD" \
                           -var "DOCKER_USER=$DOCKER_HUB_USER" \
                           -var "DOCKER_PASS=$DOCKER_HUB_PASS" \
-                          -var "ssh_public_key=$SSH_PRIV_KEY"
+                          -var "ssh_private_key=$SSH_PRIV_KEY"
                         '''
                     }
                 }
