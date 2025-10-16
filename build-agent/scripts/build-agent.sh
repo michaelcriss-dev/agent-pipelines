@@ -5,7 +5,7 @@ set -e
 sudo usermod -aG docker azureuser
 
 USER_VM="azureuser"
-IMAGE_NAME="michael2209/fullstack-app:v2.0"
+IMAGE_NAME="michael2209/fullstack-app:v3.0"
 REPO_URL="https://github.com/michaelcriss-dev/fullstack-app.git"
 
 # Permisos Docker
