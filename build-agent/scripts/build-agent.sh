@@ -12,11 +12,7 @@ REPO_URL="https://github.com/michaelcriss-dev/fullstack-app.git"
 sudo usermod -aG docker azureuser
 
 # Clonar o actualizar repositorio
-if [ -d fullstack-app ]; then
-    cd fullstack-app
-    git pull
-else
-    git clone $REPO_URL
+git clone $REPO_URL
 
 
 # Build Docker image
