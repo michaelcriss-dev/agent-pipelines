@@ -98,6 +98,7 @@ az webapp config appsettings set \
     DB_HOST="${DB_HOST}" \
     DB_USER="${ADMIN_USER}" \
     DB_PASSWORD="${ADMIN_PASSWORD}" \
-    DB_DATABASE="${MYSQL_DB}"
+    DB_NAME="${MYSQL_DB}" \
+    DB_PORT="3306"
 
 echo "Despliegue completado"
