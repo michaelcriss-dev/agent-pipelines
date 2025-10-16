@@ -15,7 +15,7 @@ APP_RG="my-app-rg"
 PLAN_NAME="plan-name-asd2dawdawwdw"
 SKU="B1"
 WEB_APP_NAME="my-web-app-3434323423"
-DOCKER_IMAGE="michael2209/fullstack-app:v3.0"
+DOCKER_IMAGE="michael2209/fullstack-app:v4.0"
 LOCATION="Canada Central"
 
 echo "Iniciando script de despliegue"
