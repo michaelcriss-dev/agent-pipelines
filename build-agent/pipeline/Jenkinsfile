@@ -83,7 +83,7 @@ pipeline {
                     usernamePassword(credentialsId: 'dockerhub-password', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
                 ]) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << ENDSSH
+                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
                       set -e
                       cd fullstack-app/
                       docker build -t ${IMAGE_NAME} .
