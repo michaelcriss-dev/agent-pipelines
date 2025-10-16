@@ -27,7 +27,7 @@ pipeline {
                           -backend-config="region=${AWS_REGION}"
 
                         terraform plan -out=myplan.tfplan -input=false \
-                          -var="ssh_public_key=$(cat ~/.ssh/id_rsa.pub)" \
+                          -var="ssh_public_key=$(ssh-keygen -y -f $SSH_KEY_FILE)" \
                           -var="ssh_private_key=$(cat $SSH_KEY_FILE)"
                         
                         terraform apply -auto-approve
@@ -42,6 +42,11 @@ pipeline {
                 script {
                     env.VM_HOST = sh(script: "terraform -chdir=${BUILD_TF} output -raw build_agent_ip", returnStdout: true).trim()
                     echo "VM_HOST=${env.VM_HOST}"
+
+                    retry(12) {
+                        sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} 'echo SSH OK'"
+                        sleep 5
+                    }
                 }
             }
         }
@@ -52,9 +57,11 @@ pipeline {
                     sh """
                     ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
                       set -e
-                      if [ ! -d fullstack-app ]; then
+                      if [ -d fullstack-app ]; then
+                        cd fullstack-app && git pull
+                      else
                         git clone https://github.com/michaelcriss-dev/fullstack-app.git
-                      fi 
+                      fi
                       ENDSSH
 
                     """
@@ -68,8 +75,9 @@ pipeline {
                 ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
                   set -e
                   cd fullstack-app/
-                  python3 -m venv venv
+                  python3 -m venv venv || true
                   . venv/bin/activate
+                  pip install -r requirements.txt || true
                   pip install pylint
                   pylint main.py db.py || true 
                   ENDSSH
