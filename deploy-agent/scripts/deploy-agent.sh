@@ -15,7 +15,7 @@ APP_RG="my-app-rg"
 PLAN_NAME="plan-name-asd2dawdawwdw"
 SKU="B1"
 WEB_APP_NAME="my-web-app-3434323423"
-DOCKER_IMAGE="michael2209/fullstack-app:v1.0"
+DOCKER_IMAGE="michael2209/fullstack-app:v2.0"
 LOCATION="Canada Central"
 
 echo "Iniciando script de despliegue"
@@ -96,7 +96,7 @@ az webapp config appsettings set \
   --name "${WEB_APP_NAME}" \
   --settings \
     DB_HOST="${DB_HOST}" \
-    DB_USER="${ADMIN_USER_FULL}" \
+    DB_USER="${ADMIN_USER}" \
     DB_PASSWORD="${ADMIN_PASSWORD}"
 
 echo "Despliegue completado"
