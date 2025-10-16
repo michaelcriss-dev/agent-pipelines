@@ -16,7 +16,7 @@ module "networking" {
   prefix              = "agent"
   subnet_id           = module.network.subnet_id
 }
-
+ 
 module "Deploy_Agent" {
   source                     = "../modules/vm-module"
   
@@ -25,8 +25,15 @@ module "Deploy_Agent" {
   location                    = "Canada Central"
   admin_username             = "azureuser"
   nic_id                     = module.networking.nic_id
-  ssh_public_key             = var.ssh_public_key
-  ssh_private_key            = var.ssh_private_key
-
-}
+  source_file                = "${path.module}/scripts/deploy-agent.sh"
+  destination                = "/tmp/deploy-agent.sh"
+  agent_name                 = "deploy-agent"
+  ssh_public_key             = var.ssh_public_key 
+    ARM_CLIENT_ID            = var.ARM_CLIENT_ID
+  ARM_CLIENT_SECRET          = var.ARM_CLIENT_SECRET
+  ARM_TENANT_ID              = var.ARM_TENANT_ID
+  DOCKER_PASS                = var.DOCKER_PASS
+  DOCKER_USER                = var.DOCKER_USER
+  ADMIN_PASSWORD             = var.ADMIN_PASSWORD
+} 
  

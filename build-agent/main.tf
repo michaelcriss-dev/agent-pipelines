@@ -25,7 +25,15 @@ module "Build_Agent" {
   location                   = "Canada Central"
   admin_username             = "azureuser"
   nic_id                     = module.networking.nic_id
-  ssh_public_key             = var.ssh_public_key
-  ssh_private_key            = var.ssh_private_key
+  source_file                = "${path.module}/scripts/build-agent.sh"
+  destination                = "/tmp/build-agent.sh"
+  agent_name                 = "build-agent"
+  ssh_public_key             = var.ssh_public_key 
+  ARM_CLIENT_ID              = var.ARM_CLIENT_ID
+  ARM_CLIENT_SECRET          = var.ARM_CLIENT_SECRET
+  ARM_TENANT_ID              = var.ARM_TENANT_ID
+  DOCKER_PASS                = var.DOCKER_PASS
+  DOCKER_USER                = var.DOCKER_USER
+  ADMIN_PASSWORD             = var.ADMIN_PASSWORD
 }
- 
+  

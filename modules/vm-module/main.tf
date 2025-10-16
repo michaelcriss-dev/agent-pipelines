@@ -26,15 +26,27 @@ resource "azurerm_linux_virtual_machine" "agent" {
 
   computer_name  = var.vm_name
 
-  provisioner "remote-exec" {
-  inline = [
-    "sudo usermod -aG docker ${var.admin_username}"
-  ] 
-  connection {
+  provisioner "file" {
+    source = var.source_file
+    destination = var.destination
+  }
+
+    provisioner "remote-exec" {
+    inline = [
+      "export DOCKER_PASS=${var.DOCKER_PASS}",
+      "export DOCKER_USER=${var.DOCKER_USER}",
+      "export ARM_CLIENT_ID=${var.ARM_CLIENT_ID}",
+      "export ARM_CLIENT_SECRET=${var.ARM_CLIENT_SECRET}",
+      "export ARM_TENANT_ID=${var.ARM_TENANT_ID}",
+      "export ADMIN_PASSWORD=${var.ADMIN_PASSWORD}",
+      "chmod +x /tmp/${var.agent_name}.sh",
+      "bash /tmp/${var.agent_name}.sh"
+    ]
+    connection {
     type        = "ssh"
     host        = azurerm_linux_virtual_machine.agent.public_ip_address
     user        = var.admin_username
-    private_key = var.ssh_private_key
+    private_key = file("~/.ssh/id_rsa")
   }
   }
 }
