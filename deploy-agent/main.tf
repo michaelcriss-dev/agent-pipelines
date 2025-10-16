@@ -35,5 +35,7 @@ module "Deploy_Agent" {
   DOCKER_PASS                = var.DOCKER_PASS
   DOCKER_USER                = var.DOCKER_USER
   ADMIN_PASSWORD             = var.ADMIN_PASSWORD
+  ssh_private_key            = var.ssh_private_key 
+
 } 
  

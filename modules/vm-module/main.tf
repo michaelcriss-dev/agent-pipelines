@@ -46,7 +46,7 @@ resource "azurerm_linux_virtual_machine" "agent" {
     type        = "ssh"
     host        = azurerm_linux_virtual_machine.agent.public_ip_address
     user        = var.admin_username
-    private_key = file("~/.ssh/id_rsa")
+    private_key = var.ssh_private_key
   }
   }
 }

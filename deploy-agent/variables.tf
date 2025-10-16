@@ -18,3 +18,6 @@ variable "ARM_TENANT_ID" {
 
 variable "ADMIN_PASSWORD" {
 }
+
+variable "ssh_private_key" {
+}
