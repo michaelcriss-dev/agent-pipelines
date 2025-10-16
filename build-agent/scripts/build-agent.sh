@@ -16,7 +16,7 @@ git clone $REPO_URL
 
 
 # Build Docker image
-cd fullsatck-app/
+cd fullstack-app/
 sudo docker build -t "$IMAGE_NAME" .
 echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
 
