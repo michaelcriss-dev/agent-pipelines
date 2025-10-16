@@ -25,7 +25,7 @@ module "Deploy_Agent" {
   location                   = var.location
   admin_username             = var.admin_username
   nic_id                     = module.networking.nic_id
-  source_file                = "${path.module}/scripts/${var.agent_name}t.sh"
+  source_file                = "${path.module}/scripts/${var.agent_name}.sh"
   destination                = "/tmp/${var.agent_name}.sh"
   agent_name                 = var.agent_name
   ssh_public_key             = var.ssh_public_key 
