@@ -5,7 +5,6 @@ IFS=$'\n\t'
 DB_RG="my-db-rg"
 MYSQL_SERVER="my-mysql-serversad2eda3ead"
 ADMIN_USER="azureuser"
-ADMIN_USER_FULL="${ADMIN_USER}@${MYSQL_SERVER}"
 MYSQL_VERSION="8.0.21"
 MYSQL_DB="stomology_dep"
 DB_HOST="my-mysql-serversad2eda3ead.mysql.database.azure.com"  
@@ -47,8 +46,17 @@ az mysql flexible-server firewall-rule create \
   --rule-name "AllowAzureServices" \
   --start-ip-address 0.0.0.0 \
   --end-ip-address 0.0.0.0
-  
-sleep 20
+
+AGENT_IP=$(curl -s ifconfig.me)
+
+az mysql flexible-server firewall-rule create \
+  --resource-group "${DB_RG}" \
+  --name "${MYSQL_SERVER}" \
+  --rule-name "AllowAgentIP" \
+  --start-ip-address "${AGENT_IP}" \
+  --end-ip-address "${AGENT_IP}"
+
+sleep 60
 
 echo "Clonando repositorio"
 git clone "$REPO_URL"
@@ -56,9 +64,9 @@ cd fullstack-app/SQL
 
 echo "Importando base de datos"
 export MYSQL_PWD="$ADMIN_PASSWORD"
-if ! mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" --silent --skip-column-names -e "USE ${MYSQL_DB};" 2>/dev/null; then
-    mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" -e "CREATE DATABASE ${MYSQL_DB};"
-    mysql -h "${DB_HOST}" -u "${ADMIN_USER_FULL}" "${MYSQL_DB}" < stomology_dep.sql
+if ! mysql -h "${DB_HOST}" -u "${ADMIN_USER}" --silent --skip-column-names -e "USE ${MYSQL_DB};" 2>/dev/null; then
+    mysql -h "${DB_HOST}" -u "${ADMIN_USER}" -e "CREATE DATABASE ${MYSQL_DB};"
+    mysql -h "${DB_HOST}" -u "${ADMIN_USER}" "${MYSQL_DB}" < stomology_dep.sql
 else
     echo "Database already exists"
 fi
