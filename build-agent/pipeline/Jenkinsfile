@@ -21,16 +21,16 @@ pipeline {
                 ]) {
                     dir("${env.BUILD_TF}") {
                         sh """
-                        terraform init \
-                          -backend-config="bucket=${BUCKET}" \
-                          -backend-config="key=${FOLDER_BUCKET}/terraform.tfstate" \
-                          -backend-config="region=${AWS_REGION}"
+                        terraform init \\
+                          -backend-config="bucket=${env.BUCKET}" \\
+                          -backend-config="key=${env.FOLDER_BUCKET}/terraform.tfstate" \\
+                          -backend-config="region=${env.AWS_REGION}"
 
-                        terraform plan -out=myplan.tfplan -input=false \
-                          -var="ssh_public_key=$(ssh-keygen -y -f $SSH_KEY_FILE)" \
-                          -var="ssh_private_key=$(cat $SSH_KEY_FILE)"
-                        
-                        terraform apply -auto-approve
+                        terraform plan -out=myplan.tfplan -input=false \\
+                          -var="ssh_public_key=$(ssh-keygen -y -f \$SSH_KEY_FILE)" \\
+                          -var="ssh_private_key=$(cat \$SSH_KEY_FILE)"
+
+                        terraform apply -auto-approve myplan.tfplan
                         """
                     }
                 }
@@ -40,11 +40,11 @@ pipeline {
         stage('Set VM Host') {
             steps {
                 script {
-                    env.VM_HOST = sh(script: "terraform -chdir=${BUILD_TF} output -raw build_agent_ip", returnStdout: true).trim()
+                    env.VM_HOST = sh(script: "terraform -chdir=${env.BUILD_TF} output -raw build_agent_ip", returnStdout: true).trim()
                     echo "VM_HOST=${env.VM_HOST}"
 
                     retry(12) {
-                        sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} 'echo SSH OK'"
+                        sh "ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.VM_USER}@${env.VM_HOST} 'echo SSH OK'"
                         sleep 5
                     }
                 }
@@ -55,7 +55,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-private-key', keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: '', usernameVariable: 'VM_USER')]) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
+                    ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.VM_USER}@${env.VM_HOST} << 'ENDSSH'
                       set -e
                       if [ -d fullstack-app ]; then
                         cd fullstack-app && git pull
@@ -63,7 +63,6 @@ pipeline {
                         git clone https://github.com/michaelcriss-dev/fullstack-app.git
                       fi
                       ENDSSH
-
                     """
                 }
             }
@@ -72,14 +71,15 @@ pipeline {
         stage('Lint') {
             steps {
                 sh """
-                ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
+                ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.VM_USER}@${env.VM_HOST} << 'ENDSSH'
                   set -e
                   cd fullstack-app/
                   python3 -m venv venv || true
                   . venv/bin/activate
+                  pip install --upgrade pip
                   pip install -r requirements.txt || true
                   pip install pylint
-                  pylint main.py db.py || true 
+                  pylint main.py db.py || true
                   ENDSSH
                 """
             }
@@ -91,10 +91,10 @@ pipeline {
                     usernamePassword(credentialsId: 'dockerhub-password', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
                 ]) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
+                    ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.VM_USER}@${env.VM_HOST} << 'ENDSSH'
                       set -e
                       cd fullstack-app/
-                      docker build -t ${IMAGE_NAME} .
+                      docker build -t ${env.IMAGE_NAME} .
                       echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin 
                       ENDSSH
                     """
@@ -105,8 +105,8 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 sh """
-                ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << 'ENDSSH'
-                  docker push ${IMAGE_NAME} 
+                ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.VM_USER}@${env.VM_HOST} << 'ENDSSH'
+                  docker push ${env.IMAGE_NAME} 
                   ENDSSH
                 """
             }
