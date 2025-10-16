@@ -16,7 +16,7 @@ git clone $REPO_URL
 
 
 # Build Docker image
-docker build -t "$IMAGE_NAME ."
+docker build -t "$IMAGE_NAME" .
 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
 # Push Docker Image
