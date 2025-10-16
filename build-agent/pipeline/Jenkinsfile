@@ -25,7 +25,7 @@ pipeline {
                     string(credentialsId: 'dockerhub-password', variable: 'DOCKER_HUB_PASS'),
                     string(credentialsId: 'MYSQL_PASSWORD', variable: 'MYSQL_PASSWORD'),
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
-                    file(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
+                    file(credentialsId: 'ssh_private_key', variable: 'SSH_PRIV_KEY')
                 ]) {
                     dir("${env.BUILD_TF}") {
                         sh '''
@@ -61,7 +61,7 @@ pipeline {
                     string(credentialsId: 'dockerhub-password', variable: 'DOCKER_HUB_PASS'),
                     string(credentialsId: 'MYSQL_PASSWORD', variable: 'MYSQL_PASSWORD'),
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
-                    file(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
+                    file(credentialsId: 'ssh_private_key', variable: 'SSH_PRIV_KEY')
                 ]) {
                     dir("${env.BUILD_TF}") {
                         sh '''
