@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     stages {
-        stage('Build CI') {
+        stage('Build Agent') {
             steps {
                 script {
                     def ciPipeline = 'Build-Agent'
@@ -17,7 +17,7 @@ pipeline {
             }
         }
 
-        stage('QA infraestructure') {
+        stage('Deploy Agent') {
             steps {
                 script {
                     def qaPipeline = 'Deploy-Agent'
