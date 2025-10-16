@@ -27,10 +27,17 @@ resource "azurerm_linux_virtual_machine" "agent" {
   computer_name  = var.vm_name
 
   provisioner "file" {
-    source = var.source_file
+    source      = var.source_file
     destination = var.destination
-  }
 
+    connection {
+      type        = "ssh"
+      host        = self.public_ip_address
+      user        = var.admin_username
+      private_key = var.ssh_private_key
+    }
+  }
+  
     provisioner "remote-exec" {
     inline = [
       "export DOCKER_PASS=${var.DOCKER_PASS}",
