@@ -25,7 +25,7 @@ pipeline {
                     string(credentialsId: 'dockerhub-password', variable: 'DOCKER_HUB_PASS'),
                     string(credentialsId: 'MYSQL_PASSWORD', variable: 'MYSQL_PASSWORD'),
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
-                    string(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
+                    file(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
                 ]) {
                     dir("${env.BUILD_TF}") {
                         sh '''
@@ -61,11 +61,19 @@ pipeline {
                     string(credentialsId: 'dockerhub-password', variable: 'DOCKER_HUB_PASS'),
                     string(credentialsId: 'MYSQL_PASSWORD', variable: 'MYSQL_PASSWORD'),
                     string(credentialsId: 'vm-public-ssh-key', variable: 'SSH_PUB'),
-                    string(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
+                    file(credentialsId: 'ssh-private-key', variable: 'SSH_PRIV_KEY')
                 ]) {
                     dir("${env.BUILD_TF}") {
                         sh '''
-                        terraform destroy -auto-approve
+                        terraform destroy -auto-approve \
+                          -var "ssh_public_key=$SSH_PUB" \
+                          -var "ARM_CLIENT_ID=$ARM_CLIENT_ID" \
+                          -var "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET" \
+                          -var "ARM_TENANT_ID=$ARM_TENANT_ID" \
+                          -var "ADMIN_PASSWORD=$MYSQL_PASSWORD" \
+                          -var "DOCKER_USER=$DOCKER_HUB_USER" \
+                          -var "DOCKER_PASS=$DOCKER_HUB_PASS" \
+                          -var "ssh_private_key=$SSH_PRIV_KEY"
                         '''
                     }
                 }
