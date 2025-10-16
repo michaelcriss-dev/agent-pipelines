@@ -1,0 +1,125 @@
+pipeline {
+    agent any
+    environment {
+        VM_USER       = 'azureuser'                                      
+        SSH_KEY       = credentials('vm-private-ssh-key')  
+        SSH_PUBLIC_KEY = credentials('vm-public-ssh-key')
+        BUILD_TF      = './build-agent'
+        BUCKET        = 'az-app-backend'
+        FOLDER_BUCKET = 'build-agent-tf'
+        AWS_REGION    = 'us-east-2'
+        IMAGE_NAME    = 'michael2209/fullstack-app:latest'
+        DOCKERHUB_USERNAME = credentials('dockerhub-username')
+        DOCKERHUB_PASSWORD = credentials('dockerhub-password')
+    }
+
+    stages {
+        stage('Build Agent deploy') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                    sshUserPrivateKey(credentialsId: 'vm-ssh-private-key', keyFileVariable: 'SSH_KEY_FILE', passphraseVariable: '', usernameVariable: 'SSH_USER')
+                ]) {
+                    dir("${env.BUILD_TF}") {
+                        sh """
+                        terraform init \
+                          -backend-config="bucket=${BUCKET}" \
+                          -backend-config="key=${FOLDER_BUCKET}/terraform.tfstate" \
+                          -backend-config="region=${AWS_REGION}"
+
+                        terraform plan -out=myplan.tfplan -input=false \
+                          -var="ssh_public_key=${SSH_PUBLIC_KEY}" \
+                          -var="ssh_private_key=${SSH_KEY_FILE}"
+                        
+                        terraform apply -auto-approve
+                        """
+                    }
+                }
+            }
+        }
+
+        stage ('Agent Env'){
+            steps{
+                script{
+                    env.VM_HOST = sh(script: "terraform -chdir=${BUILD_TF} output -raw build_agent_ip", returnStdout: true).trim()
+                    echo "VM_HOST=${env.VM_HOST}"
+                }
+            }
+        }
+
+        stage('Fetch code') {
+            steps {
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << "ENDSSH"
+                      set -e
+                      git clone https://github.com/michaelcriss-dev/fullstack-app.git
+
+                    ENDSSH
+                    """
+                }
+            }
+        }
+
+        stage('lint') {
+            steps {
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << "ENDSSH"
+                      set -e
+                      cd fullstack-app/
+                      python3 -m venv venv
+                      . venv/bin/activate
+                      pip install pylint
+                      pylint main.py db.py || true
+
+                    """
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << "ENDSSH"
+                      set -e
+                      export DOCKERHUB_USERNAME='${DOCKERHUB_USERNAME}'
+                      export DOCKERHUB_PASSWORD='${DOCKERHUB_PASSWORD}'
+                      cd fullstack-app/
+                      docker build -t ${IMAGE_NAME} .
+                      echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+                    ENDSSH
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Docker Hub') {
+            steps {
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_FILE} ${VM_USER}@${VM_HOST} << "ENDSSH"
+                      docker push ${IMAGE_NAME}
+                    """
+                }
+            }
+        }
+
+        stage('Build Agent destroy') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                ]) {
+                    dir("${env.BUILD_TF}") {
+                        sh """
+                        terraform destroy -auto-approve || true
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
